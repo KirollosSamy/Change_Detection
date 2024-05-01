@@ -1,7 +1,7 @@
 import torch
 from tqdm import tqdm
 
-def train_one_epoch(model, train_loader, criterion, optimizer):
+def train_one_epoch(model, train_loader, criterion, optimizer, device='cpu'):
      # Make sure gradient tracking is on, and do a pass over the data
     model.train(True)
     
@@ -10,10 +10,15 @@ def train_one_epoch(model, train_loader, criterion, optimizer):
     
     for i, batch in enumerate(tqdm(train_loader)):
         A, B, delta = batch
-        concat = torch.cat((A, B), dim=1)
+   
+        input = torch.cat((A, B), dim=1)
+        
+        input.to(device)
+        delta.to(device)
     
         # forward pass
-        output = model(concat)
+        output = model(input)
+        output = output.squeeze()
         loss = criterion(output, delta)
         
         # backward pass
@@ -32,7 +37,7 @@ def train_one_epoch(model, train_loader, criterion, optimizer):
         
         return last_avg_loss
     
-def validate(model, val_loader, criterion):
+def validate(model, val_loader, criterion, device='cpu'):
     running_loss = 0.0
     # Set the model to evaluation mode, disabling dropout and using population
     # statistics for batch normalization.
@@ -42,9 +47,14 @@ def validate(model, val_loader, criterion):
     with torch.no_grad():
         for i, batch in enumerate(val_loader):
             A, B, delta = batch
-            concat = torch.cat((A, B), dim=1)
             
-            output = model(concat)
+            input = torch.cat((A, B), dim=1)
+            
+            input.to(device)
+            delta.to(device)
+            
+            output = model(input)
+            output = output.squeeze()
             loss = criterion(output, delta)
             running_loss += loss.item()
 
@@ -52,7 +62,7 @@ def validate(model, val_loader, criterion):
     
     return avg_vloss
 
-def train(model, train_loader, val_loader, lr, epochs):
+def train(model, train_loader, val_loader, lr, epochs, model_dir, device='cpu'):
     optimizer = torch.optim.Adam(model.parameters(), lr=lr)
     criterion = torch.nn.BCEWithLogitsLoss()
     
@@ -61,14 +71,14 @@ def train(model, train_loader, val_loader, lr, epochs):
     for epoch in range(epochs):
         print('EPOCH {}:'.format(epoch + 1))
         
-        avg_loss = train_one_epoch(model, train_loader, criterion, optimizer)
+        avg_loss = train_one_epoch(model, train_loader, criterion, optimizer, device)
         
-        avg_vloss = validate(model, val_loader, criterion)
+        avg_vloss = validate(model, val_loader, criterion, device)
 
         print('LOSS train {} valid {}'.format(avg_loss, avg_vloss))    
   
         # Track best performance, and save the model's state
         if avg_vloss < best_vloss:
             best_vloss = avg_vloss
-            model_path = 'model_{}'.format(epoch)
+            model_path = '{}/model_{}.pth'.format(model_dir, epoch)
             torch.save(model.state_dict(), model_path)

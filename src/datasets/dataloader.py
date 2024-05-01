@@ -61,7 +61,7 @@ delta_transform = transforms.Compose([
     transforms.Resize((256, 256)),
     transforms.Grayscale(),
     transforms.ToTensor(),
-    transforms.ToDtype(torch.uint8),
+    # transforms.ToDtype(torch.uint8),
     transforms.Lambda(lambda x: x.squeeze()),
 ])
 
