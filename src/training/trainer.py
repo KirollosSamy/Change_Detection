@@ -1,5 +1,5 @@
 import torch
-from tqdm import tqdm
+from tqdm.notebook import tqdm
 
 def train_one_epoch(model, train_loader, criterion, optimizer, device='cpu'):
      # Make sure gradient tracking is on, and do a pass over the data
@@ -29,12 +29,12 @@ def train_one_epoch(model, train_loader, criterion, optimizer, device='cpu'):
         
         # Gather data and report
         running_loss += loss.item()
-        if i % 1000 == 999:
-            last_avg_loss = running_loss / 1000 # loss per batch
+        if i % 20 == 19:
+            last_avg_loss = running_loss / 20 # loss per batch
             print('  batch {} loss: {}'.format(i + 1, last_avg_loss))
             running_loss = 0.0
         
-        return last_avg_loss
+    return last_avg_loss
     
 def validate(model, val_loader, criterion, device='cpu'):
     running_loss = 0.0
