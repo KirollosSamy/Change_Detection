@@ -82,6 +82,6 @@ def create_data_loaders(data_dir, val_ratio, batch_size, grayscale=False):
     train_dataset, val_dataset = random_split(dataset, [train_size, val_size])
 
     train_loader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True)
-    val_loader = DataLoader(val_dataset, batch_size=batch_size, shuffle=True)
+    val_loader = DataLoader(val_dataset, batch_size=batch_size, shuffle=False)
 
     return train_loader, val_loader
