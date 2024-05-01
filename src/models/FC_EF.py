@@ -10,6 +10,7 @@ class BasicConv(torch.nn.Module):
             torch.nn.Conv2d(in_channels, out_channels, kernel_size=3, padding=1, bias=False),
             torch.nn.BatchNorm2d(out_channels),
             torch.nn.ReLU(inplace=True),   
+            torch.nn.Dropout2d(p)         
         )
         
     def forward(self, x):
