@@ -2,6 +2,18 @@ import torch
 import torch.nn
 from collections import deque
 
+class BasicConv(torch.nn.Module):
+    def __init__(self, in_channels, out_channels, p=0.2) -> None:
+        super(BasicConv, self).__init__()
+        
+        self.conv = torch.nn.Sequential(
+            torch.nn.Conv2d(in_channels, out_channels, kernel_size=3, padding=1, bias=False),
+            torch.nn.BatchNorm2d(out_channels),
+            torch.nn.ReLU(inplace=True),   
+        )
+        
+    def forward(self, x):
+        return self.conv(x)
 
 class DoubleConv(torch.nn.Module):
     def __init__(self, in_channels, out_channels, mid_channels=None):
@@ -10,12 +22,8 @@ class DoubleConv(torch.nn.Module):
         mid_channels = mid_channels if mid_channels is not None else out_channels
         
         self.conv = torch.nn.Sequential(
-            torch.nn.Conv2d(in_channels, mid_channels, kernel_size=3, padding=1, bias=False),
-            torch.nn.BatchNorm2d(mid_channels),
-            torch.nn.ReLU(inplace=True),
-            torch.nn.Conv2d(mid_channels, out_channels, kernel_size=3, padding=1, bias=False),
-            torch.nn.BatchNorm2d(out_channels),
-            torch.nn.ReLU(inplace=True),
+            BasicConv(in_channels, mid_channels),
+            BasicConv(mid_channels, out_channels),
         )
 
     def forward(self, x):
@@ -23,15 +31,14 @@ class DoubleConv(torch.nn.Module):
     
 class TripleConv(torch.nn.Module):
     def __init__(self, in_channels, out_channels, mid_channels=None):
-        super(DoubleConv, self).__init__()
+        super(TripleConv, self).__init__()
         
         mid_channels = mid_channels if mid_channels is not None else out_channels
         
         self.conv = torch.nn.Sequential(
-            DoubleConv(in_channels, mid_channels),
-            torch.nn.Conv2d(mid_channels, out_channels, kernel_size=3, padding=1, bias=False),
-            torch.nn.BatchNorm2d(out_channels),
-            torch.nn.ReLU(inplace=True),
+            BasicConv(in_channels, mid_channels),
+            BasicConv(mid_channels, mid_channels),
+            BasicConv(mid_channels, out_channels),   
         )
 
     def forward(self, x):
@@ -60,10 +67,11 @@ class FC_EF(torch.nn.Module):
             torch.nn.ConvTranspose2d(32, 32, kernel_size=2, stride=2),
             DoubleConv(64, 16, 32),
             torch.nn.ConvTranspose2d(16, 16, kernel_size=2, stride=2), 
-            torch.nn.Conv2d(32, 16, kernel_size=3, padding=1, bias=False) 
+            BasicConv(32, 16)
         ])
         
         self.final_conv = torch.nn.Conv2d(16, out_channels, kernel_size=1, padding=0) 
+        # self.final_conv = torch.nn.Conv2d(16, out_channels, kernel_size=3, padding=1) 
 
     def forward(self, x):
         skip_connections = deque()
@@ -81,3 +89,4 @@ class FC_EF(torch.nn.Module):
             x = self.ups[i+1](concat)
         
         return self.final_conv(x)
+    
