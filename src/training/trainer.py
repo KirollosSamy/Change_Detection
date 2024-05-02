@@ -10,14 +10,18 @@ def train_one_epoch(model, train_loader, criterion, optimizer, device='cpu'):
     
     for i, batch in enumerate(tqdm(train_loader)):
         A, B, delta = batch
+                
+        A = A.to(device)
+        B = B.to(device)
+        delta = delta.to(device)
    
-        input = torch.cat((A, B), dim=1)
-        
-        input.to(device)
-        delta.to(device)
+        # input = torch.cat((A, B), dim=1)
+        # input = input.to(device)
+        # delta = delta.to(device)
     
         # forward pass
-        output = model(input)
+        # output = model(input)
+        output = model(A, B)
         loss = criterion(output, delta)
         
         # backward pass
@@ -47,12 +51,16 @@ def validate(model, val_loader, criterion, device='cpu'):
         for i, batch in enumerate(val_loader):
             A, B, delta = batch
             
-            input = torch.cat((A, B), dim=1)
+            A = A.to(device)
+            B = B.to(device)
+            delta = delta.to(device)
             
-            input.to(device)
-            delta.to(device)
+            # input = torch.cat((A, B), dim=1)
+            # input = input.to(device)
+            # delta = delta.to(device)
             
-            output = model(input)
+            # output = model(input)
+            output = model(A, B)
             loss = criterion(output, delta)
             running_loss += loss.item()
 
@@ -61,9 +69,9 @@ def validate(model, val_loader, criterion, device='cpu'):
     return avg_vloss
 
 def train(model, train_loader, val_loader, lr, epochs, model_dir, device='cpu'):
-    optimizer = torch.optim.Adam(model.parameters(), lr=lr)
-    # optimizer = torch.optim.Adam(model.parameters(), weight_decay=1e-4)
-    # scheduler = torch.optim.lr_scheduler.ExponentialLR(optimizer, 0.95)
+    # optimizer = torch.optim.Adam(model.parameters(), lr=lr)
+    optimizer = torch.optim.Adam(model.parameters(), weight_decay=1e-4)
+    scheduler = torch.optim.lr_scheduler.ExponentialLR(optimizer, 0.95)
     
     criterion = torch.nn.BCEWithLogitsLoss()
     
@@ -74,7 +82,7 @@ def train(model, train_loader, val_loader, lr, epochs, model_dir, device='cpu'):
         
         avg_loss = train_one_epoch(model, train_loader, criterion, optimizer, device)
         
-        # scheduler.step()
+        scheduler.step()
         
         avg_vloss = validate(model, val_loader, criterion, device)
 
