@@ -25,10 +25,6 @@ class ChangeDetectionDataset(Dataset):
         A = Image.open(self.A_image_paths[idx])
         B = Image.open(self.B_image_paths[idx])
         delta = Image.open(self.delta_image_paths[idx])
-        
-        print(self.A_image_paths[idx])
-        print(self.B_image_paths[idx])
-        print(self.delta_image_paths[idx])
                 
         A = self.transform(A)
         B = self.transform(B)
