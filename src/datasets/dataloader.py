@@ -42,7 +42,7 @@ class ChangeDetectionDataset(Dataset):
         return len(self.A_image_paths)
     
     def _list_images(self, dir):
-        image_list = os.listdir(dir)
+        image_list = sorted(os.listdir(dir))
         image_paths = [os.path.join(dir, img) for img in image_list]
         return image_paths
     
