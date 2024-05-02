@@ -4,28 +4,28 @@ from torchmetrics.classification import BinaryJaccardIndex
 from matplotlib import pyplot as plt
 from tqdm.notebook import tqdm
 
-def jaggard_batch(pred: torch.Tensor, target: torch.Tensor):
+def jaccard_batch(pred: torch.Tensor, target: torch.Tensor):
     pred = pred.squeeze()
     target = target.squeeze()
     
     jaccard_index = BinaryJaccardIndex()
-    total_jaggard = 0.0
+    total_jaccard = 0.0
     
     batch_size = pred.shape[0]
     
     for i in range(batch_size):
         jaccard = jaccard_index(pred[i], target[i]).item()
         if not np.isnan(jaccard):
-            total_jaggard += jaccard
+            total_jaccard += jaccard
         else:
-            total_jaggard += 1
+            total_jaccard += 1
         
-    return total_jaggard / batch_size
+    return total_jaccard / batch_size
     
 def evaluate(model, dataloader, device='cpu', verbose=False):
     model.eval()
     
-    total_jaggard = 0.0
+    total_jaccard = 0.0
     total_loss = 0.0
     
     criterion = torch.nn.BCEWithLogitsLoss()
@@ -53,11 +53,11 @@ def evaluate(model, dataloader, device='cpu', verbose=False):
             if verbose:
                 visualize_batch(A, B, delta, change_map)
             
-            total_jaggard += jaggard_batch(change_map, delta)
+            total_jaccard += jaccard_batch(change_map, delta)
 
     avg_loss = total_loss / len(dataloader)
-    avg_jaggard = total_jaggard / len(dataloader)
-    print(f'Evaluation Loss: {avg_loss:.6f}, Jaggard Index: {avg_jaggard:.6f}')
+    avg_jaccard = total_jaccard / len(dataloader)
+    print(f'Evaluation Loss: {avg_loss:.6f}, Jaggard Index: {avg_jaccard:.6f}')
 
 def visualize_batch(A, B, delta, change_map):    
     batch_size = A.shape[0]

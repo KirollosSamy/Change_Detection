@@ -71,7 +71,8 @@ def create_data_loaders(data_dir, val_ratio, batch_size, grayscale=False):
     val_size = int(val_ratio * len(dataset))
     train_size = len(dataset) - val_size
 
-    train_dataset, val_dataset = random_split(dataset, [train_size, val_size])
+    generator = torch.Generator().manual_seed(42) # Fix the generator to reproduce the split
+    train_dataset, val_dataset = random_split(dataset, [train_size, val_size], generator)
 
     train_loader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True)
     val_loader = DataLoader(val_dataset, batch_size=batch_size, shuffle=False)
