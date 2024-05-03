@@ -1,6 +1,6 @@
 import numpy as np
 import torch
-from torchmetrics.classification import BinaryJaccardIndex
+from torchmetrics.classification import BinaryJaccardIndex, BinaryAccuracy
 from matplotlib import pyplot as plt
 from tqdm.notebook import tqdm
 
@@ -27,8 +27,10 @@ def evaluate(model, dataloader, device='cpu', verbose=False):
     
     total_jaccard = 0.0
     total_loss = 0.0
+    total_accuracy = 0.0
     
     criterion = torch.nn.BCEWithLogitsLoss()
+    binary_accuracy = BinaryAccuracy()
             
     with torch.no_grad():
         for batch in tqdm(dataloader):
@@ -54,10 +56,12 @@ def evaluate(model, dataloader, device='cpu', verbose=False):
                 visualize_batch(A, B, delta, change_map)
             
             total_jaccard += jaccard_batch(change_map, delta)
+            total_accuracy += binary_accuracy(change_map, delta).item()
 
     avg_loss = total_loss / len(dataloader)
     avg_jaccard = total_jaccard / len(dataloader)
-    print(f'Evaluation Loss: {avg_loss:.6f}, Jaggard Index: {avg_jaccard:.6f}')
+    avg_accuracy = total_accuracy / len(dataloader)
+    print(f'Evaluation Loss: {avg_loss:.6f}, Jaggard Index: {avg_jaccard:.6f}, Accuracy: {avg_accuracy:.6f}')
 
 def visualize_batch(A, B, delta, change_map):    
     batch_size = A.shape[0]
