@@ -3,6 +3,8 @@ import torch
 from torchmetrics.classification import BinaryJaccardIndex, BinaryAccuracy
 from matplotlib import pyplot as plt
 from tqdm.notebook import tqdm
+import os
+from torchvision.utils import save_image
 
 def jaccard_batch(pred: torch.Tensor, target: torch.Tensor):
     pred = pred.squeeze()
@@ -53,7 +55,7 @@ def evaluate(model, dataloader, device='cpu', verbose=False):
             change_map = torch.where(sigmoid_out > 0.5, torch.tensor(1), torch.tensor(0))
             
             if verbose:
-                visualize_batch(A, B, delta, change_map)
+                visualize_batch(A, B, change_map, delta)
             
             total_jaccard += jaccard_batch(change_map, delta)
             total_accuracy += binary_accuracy(change_map, delta).item()
@@ -63,7 +65,7 @@ def evaluate(model, dataloader, device='cpu', verbose=False):
     avg_accuracy = total_accuracy / len(dataloader)
     print(f'Evaluation Loss: {avg_loss:.6f}, Jaggard Index: {avg_jaccard:.6f}, Accuracy: {avg_accuracy:.6f}')
 
-def visualize_batch(A, B, delta, change_map):    
+def visualize_batch(A, B, change_map, delta=None):    
     batch_size = A.shape[0]
 
     for i in range(batch_size):
@@ -83,9 +85,39 @@ def visualize_batch(A, B, delta, change_map):
         plt.title('Model Output')
         plt.axis('off')
 
-        plt.subplot(1, 4, 4)
-        plt.imshow(delta[i].squeeze().numpy(), cmap='gray')
-        plt.title('Delta')
-        plt.axis('off')
+        if delta is not None:
+            plt.subplot(1, 4, 4)
+            plt.imshow(delta[i].squeeze().numpy(), cmap='gray')
+            plt.title('Delta')
+            plt.axis('off')
 
         plt.show()
+        
+def test(model, test_loader, device='cpu', verbose=False, save_dir=None):
+    model.eval()
+                
+    with torch.no_grad():
+        for batch_idx, batch in enumerate(tqdm(test_loader)):
+            A, B = batch
+
+            A = A.to(device)
+            B = B.to(device)
+
+            output = model(A, B)
+
+            output = output.to(device='cpu')
+            A = A.to(device='cpu')
+            B = B.to(device='cpu')
+            
+            sigmoid_out = torch.sigmoid(output)
+            change_map = torch.where(sigmoid_out > 0.5, torch.tensor(1), torch.tensor(0))
+            
+            # Save change maps
+            if save_dir is not None:
+                for i in range(len(change_map)):
+                    image_name = os.path.join(save_dir, f'change_map_{batch_idx * len(change_map) + i}.png')
+                    save_image(change_map[i], image_name)
+            
+            if verbose:
+                visualize_batch(A, B, change_map)
+    

@@ -10,13 +10,15 @@ from typing import Tuple
 IMAGE_PATHS_FILE = "paths.pkl"
 
 class ChangeDetectionDataset(Dataset):
-    def __init__(self, data_dir, transform=None, delta_transform=None):
+    def __init__(self, data_dir, transform=None, delta_transform=None, is_train = True):
         self.transform = transform
         self.delta_transform = delta_transform
+        self.is_train = is_train
         
         self.A_image_paths = self._list_images(data_dir, 'A')
         self.B_image_paths = self._list_images(data_dir, 'B')
-        self.delta_image_paths = self._list_images(data_dir, 'delta')
+        if self.is_train:
+            self.delta_image_paths = self._list_images(data_dir, 'delta')
         
     def __getitem__(self, idx) -> Tuple[torch.Tensor, torch.Tensor, torch.Tensor]:
         if torch.is_tensor(idx):
@@ -24,22 +26,27 @@ class ChangeDetectionDataset(Dataset):
             
         A = Image.open(self.A_image_paths[idx])
         B = Image.open(self.B_image_paths[idx])
-        delta = Image.open(self.delta_image_paths[idx])
                 
         A = self.transform(A)
         B = self.transform(B)
-        delta = self.delta_transform(delta)
-                    
-        return A, B, delta
+        
+        if self.is_train:
+            delta = Image.open(self.delta_image_paths[idx])
+            delta = self.delta_transform(delta)
+            return A, B, delta
+        else:
+            return A, B
     
     
     def __len__(self) -> int:
         return len(self.A_image_paths)
     
     def _list_images(self, data_dir, image_dir):
-        # image_list = sorted(os.listdir(dir))
-        with open(IMAGE_PATHS_FILE, "rb") as file:
-            image_list = pickle.load(file)
+        if self.is_train:
+            with open(IMAGE_PATHS_FILE, "rb") as file:
+                image_list = pickle.load(file)
+        else:
+           image_list = os.listdir(os.path.join(data_dir, image_dir))
             
         image_paths = [os.path.join(data_dir, image_dir, img) for img in image_list]
         return image_paths
@@ -78,3 +85,8 @@ def create_data_loaders(data_dir, val_ratio, batch_size, grayscale=False):
     val_loader = DataLoader(val_dataset, batch_size=batch_size, shuffle=False)
 
     return train_loader, val_loader
+
+def create_test_loader(data_dir, batch_size):
+    test_set = ChangeDetectionDataset(data_dir, transform, None, is_train=True)
+    test_loader = DataLoader(test_set, batch_size, shuffle=False)
+    return test_loader

@@ -68,10 +68,10 @@ def validate(model, val_loader, criterion, device='cpu'):
     
     return avg_vloss
 
-def train(model, train_loader, val_loader, lr, epochs, model_dir, device='cpu'):
+def train(model, train_loader, val_loader, epochs, model_dir, lr=0.001, gamma=0.95, weight_decay=1e-4, device='cpu'):
     # optimizer = torch.optim.Adam(model.parameters(), lr=lr)
-    optimizer = torch.optim.Adam(model.parameters(), weight_decay=1e-4)
-    scheduler = torch.optim.lr_scheduler.ExponentialLR(optimizer, 0.95)
+    optimizer = torch.optim.Adam(model.parameters(), weight_decay=weight_decay, lr=lr)
+    scheduler = torch.optim.lr_scheduler.ExponentialLR(optimizer, gamma=gamma)
     
     criterion = torch.nn.BCEWithLogitsLoss()
     
