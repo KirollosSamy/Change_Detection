@@ -116,7 +116,7 @@ def test(model, test_loader, device='cpu', verbose=False, save_dir=None):
             if save_dir is not None:
                 for i in range(len(change_map)):
                     image_name = os.path.join(save_dir, f'change_map_{batch_idx * len(change_map) + i}.png')
-                    save_image(change_map[i], image_name)
+                    save_image(change_map[i].to(torch.float16), image_name)
             
             if verbose:
                 visualize_batch(A, B, change_map)

@@ -87,6 +87,6 @@ def create_data_loaders(data_dir, val_ratio, batch_size, grayscale=False):
     return train_loader, val_loader
 
 def create_test_loader(data_dir, batch_size):
-    test_set = ChangeDetectionDataset(data_dir, transform, None, is_train=True)
+    test_set = ChangeDetectionDataset(data_dir, transform, None, is_train=False)
     test_loader = DataLoader(test_set, batch_size, shuffle=False)
     return test_loader
