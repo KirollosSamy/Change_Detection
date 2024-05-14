@@ -46,7 +46,7 @@ class ChangeDetectionDataset(Dataset):
             with open(IMAGE_PATHS_FILE, "rb") as file:
                 image_list = pickle.load(file)
         else:
-           image_list = os.listdir(os.path.join(data_dir, image_dir))
+           image_list = sorted(os.listdir(os.path.join(data_dir, image_dir)))
             
         image_paths = [os.path.join(data_dir, image_dir, img) for img in image_list]
         return image_paths

@@ -115,7 +115,7 @@ def test(model, test_loader, device='cpu', verbose=False, save_dir=None):
             # Save change maps
             if save_dir is not None:
                 for i in range(len(change_map)):
-                    image_name = os.path.join(save_dir, f'change_map_{batch_idx * len(change_map) + i}.png')
+                    image_name = os.path.join(save_dir, f'{(batch_idx * len(change_map) + i):04d}.png')
                     save_image(change_map[i].to(torch.float16), image_name)
             
             if verbose:
