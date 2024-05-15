@@ -1,0 +1,27 @@
+RANSAC, which stands for Random Sample Consensus, is a robust algorithm used for estimating the parameters of a mathematical model from a set of observed data that contains outliers. Here’s an explanation tailored for someone unfamiliar with the concept:
+
+Key Concepts
+Model Estimation: Suppose you want to fit a model to your data. In image processing, this model could be a transformation that aligns two images.
+Outliers: These are data points that don't fit the model well. In the context of image alignment, these could be incorrectly matched feature points.
+Consensus: Finding a model that fits the largest subset of your data points (inliers).
+How RANSAC Works
+Random Sampling:
+
+RANSAC starts by randomly selecting a small subset of the data points to fit the model.
+For image alignment, this means picking a few matched feature points from the reference and slave images.
+Model Fitting:
+
+Using the randomly chosen points, a model is fitted. For image alignment, this could be a transformation (like a projective transform).
+Consensus Set:
+
+The fitted model is then used to predict where other points should be.
+All the data points are tested against this model to see how well they fit (i.e., how close they are to the model prediction within a certain threshold).
+Points that fit well are considered inliers, while those that don't are outliers.
+Evaluate and Iterate:
+
+The number of inliers (points that fit the model) is counted.
+This process (steps 1-3) is repeated many times, each time with a different random subset of points.
+The model with the highest number of inliers is considered the best.
+Refine the Model:
+
+Once the best model is found, it can be refined by re-fitting it using all inliers.

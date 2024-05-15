@@ -3,6 +3,11 @@ from skimage.feature import match_descriptors, ORB, SIFT
 from skimage.measure import ransac
 
 def rectify(ref_image, slave_image):
+    '''
+        This method is responsible for aligning the slave image on the reference image using Sift Detector
+        This is done by calling the detect and extract on both images, returning the keypoints, and the descriptors 
+        then mathcing these descrpitors together
+    '''
     sift = SIFT()
 
     sift.detect_and_extract(ref_image)
@@ -16,11 +21,17 @@ def rectify(ref_image, slave_image):
     # tform = transform.AffineTransform()
     # tform.estimate(src, dst)
     
-    # robustly estimate transform model with RANSAC
+    '''
+        It robustly estimate transform model with RANSAC (Random Sample Consensus)
+        It is a robust algorithm used for estimating the parameters of a mathematical model 
+        from a set of observed data that contains outliers
+        The Consensus role is to find the model which fits the largest subset of our data points.
+    '''
     tform, _ = ransac(
         (src, dst), transform.ProjectiveTransform, min_samples=3, residual_threshold=2, max_trials=100
     )
     
+    # This applies transformatoin to the slave image to align it to the reference image.
     rectified_image = transform.warp(slave_image, tform)
     return rectified_image
     
